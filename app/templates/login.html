@@ -1,0 +1,9 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Finance Tracker Pro</title><link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}"></head>
+<body class="auth-body"><main class="auth-card"><div class="brand-mark">FT</div><p class="eyebrow">FINANZAS PERSONALES</p>
+<h1>Controla tu dinero</h1><p class="muted">Registra movimientos, crea presupuestos y alcanza tus metas.</p>
+{% if error %}<div class="error">{{ error }}</div>{% endif %}
+<form method="post" action="/login"><label>Correo<input type="email" name="email" required></label>
+<label>Contraseña<input type="password" name="password" required></label><button>Ingresar</button></form>
+<p class="switch-link">¿No tienes cuenta? <a href="/register">Regístrate</a></p>
+<div class="demo-box"><strong>Usuario demo</strong><small>demo@finance.com / Demo123</small></div></main></body></html>

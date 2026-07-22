@@ -1,0 +1,206 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Finance Tracker Pro</title><link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head><body>
+<header class="hero"><div><p class="eyebrow">TU PANEL FINANCIERO</p><h1>Hola, {{ user.full_name }}</h1>
+<p>{{ user.financial_goal or "Organiza tus gastos y construye mejores hábitos financieros." }}</p></div>
+<nav>
+<a href="/web/export/csv">Exportar CSV</a>
+<a href="/docs">API Docs</a>
+<button type="button" id="themeToggle" class="nav-button" aria-label="Cambiar tema">🌙</button>
+<a href="/logout">Cerrar sesión</a>
+</nav></header>
+<main class="container">
+<div id="toastContainer" class="toast-container">{% set notice=request.query_params.get("notice") %}
+{% if notice=="goal-contribution" %}<div class="success">El aporte fue registrado y descontado del balance.</div>
+{% elif notice=="recurring-paid" %}<div class="success">El pago recurrente fue registrado. No podrás pagarlo otra vez hasta el próximo mes.</div>
+{% elif notice=="already-paid" %}<div class="error">Este gasto recurrente ya fue pagado durante el mes actual.</div>
+{% elif notice=="duplicate-recurring" %}<div class="error">Ya existe un gasto recurrente activo con ese nombre.</div>
+{% elif notice=="insufficient-balance" %}<div class="error">No tienes saldo suficiente para realizar la operación.</div>
+{% elif notice=="goal-complete" %}<div class="success">La meta ya está completa.</div>
+{% elif notice=="profile-updated" %}<div class="success">Tu configuración financiera fue actualizada.</div>{% endif %}</div>
+
+<section class="stats">
+<article class="balance">
+<span>Balance actual</span>
+<strong>S/ {{ "%.2f"|format(balance) }}</strong>
+<small>Ingresos acumulados menos gastos acumulados</small>
+</article>
+<article>
+<span>Ingresos del mes</span>
+<strong>S/ {{ "%.2f"|format(month_income) }}</strong>
+<small class="variation {{ 'good' if income_variation is not none and income_variation >= 0 else 'bad' }}">
+{% if income_variation is none %}Sin comparación
+{% else %}{{ "▲" if income_variation >= 0 else "▼" }} {{ income_variation|abs }}% vs. {{ previous_month_name }}
+{% endif %}
+</small>
+</article>
+<article>
+<span>Gastos del mes</span>
+<strong>S/ {{ "%.2f"|format(month_expenses) }}</strong>
+<small class="variation {{ 'good' if expense_variation is not none and expense_variation <= 0 else 'bad' }}">
+{% if expense_variation is none %}Sin comparación
+{% else %}{{ "▲" if expense_variation >= 0 else "▼" }} {{ expense_variation|abs }}% vs. {{ previous_month_name }}
+{% endif %}
+</small>
+</article>
+<article>
+<span>Ahorro del mes</span>
+<strong>S/ {{ "%.2f"|format(current_savings) }}</strong>
+<small class="variation {{ 'good' if savings_variation is not none and savings_variation >= 0 else 'bad' }}">
+{% if savings_variation is none %}Sin comparación
+{% else %}{{ "▲" if savings_variation >= 0 else "▼" }} {{ savings_variation|abs }}% vs. {{ previous_month_name }}
+{% endif %}
+</small>
+</article>
+</section>
+<section class="smart-overview">
+<article class="panel health-panel">
+<div class="health-ring" style="--score: {{ health_score }}">
+<div><strong>{{ health_score }}</strong><span>/100</span></div>
+</div>
+<div>
+<p class="eyebrow dark-eyebrow">SALUD FINANCIERA</p>
+<h2>{{ health_label }}</h2>
+<p class="muted">Se calcula según ahorro, presupuestos, pagos y balance disponible.</p>
+</div>
+</article>
+<article class="mini-card">
+<span>Mayor gasto del mes</span>
+{% if top_category %}
+<strong>{{ top_category[0] }}</strong>
+<p>S/ {{ "%.2f"|format(top_category[1]) }}</p>
+{% else %}<strong>Sin datos</strong><p>Registra gastos para analizar.</p>{% endif %}
+</article>
+<article class="mini-card">
+<span>Meta más cercana</span>
+{% if closest_goal %}
+<strong>{{ closest_goal.name }}</strong>
+<p>{{ closest_goal.percent }}% completado</p>
+{% else %}<strong>Sin metas pendientes</strong><p>Crea una nueva meta de ahorro.</p>{% endif %}
+</article>
+<article class="mini-card">
+<span>Próximo compromiso</span>
+{% set pending = recurring|selectattr("paid", "equalto", false)|list %}
+{% if pending %}
+<strong>{{ pending[0].item.name }}</strong>
+<p>{{ pending[0].status }}</p>
+{% else %}<strong>Todo al día</strong><p>No tienes pagos pendientes.</p>{% endif %}
+</article>
+</section>
+
+
+<section class="main-grid">
+<article class="panel chart-panel">
+<div class="panel-title"><div><h2>Análisis de gastos</h2><p class="muted chart-summary" id="chartSummary"></p></div></div>
+<div class="chart-tabs">
+<button type="button" class="chart-tab active" data-view="category">Categorías</button>
+<button type="button" class="chart-tab" data-view="day">Días</button>
+<button type="button" class="chart-tab" data-view="month">Meses</button>
+<button type="button" class="chart-tab" data-view="year">Años</button>
+</div>
+<div class="chart-filters">
+<label>Categoría<select id="chartCategory"><option value="Todas">Todas</option>{% for c in expense_categories %}<option value="{{ c.value }}">{{ c.value }}</option>{% endfor %}</select></label>
+<label id="monthFilterLabel">Mes<select id="chartMonth">{% for number,name in months %}<option value="{{ number }}" {{ "selected" if number==current_month else "" }}>{{ name }}</option>{% endfor %}</select></label>
+<label id="yearFilterLabel">Año<select id="chartYear">{% for y in years %}<option value="{{ y }}">{{ y }}</option>{% endfor %}</select></label>
+</div>
+<div class="chart-canvas"><canvas id="expenseChart"></canvas></div>
+</article>
+<article class="panel insights"><div class="panel-title"><h2>Financial Insights</h2><a href="#insight-history">Ver historial</a></div>
+{% for i in insights %}<div class="insight-item"><span class="insight-type">{{ i.insight_type.value }}</span><strong>{{ i.title }}</strong><p>{{ i.message }}</p></div>
+{% else %}<p class="muted">Registra más movimientos para recibir recomendaciones.</p>{% endfor %}</article>
+</section>
+
+<section class="panel"><h2>Registrar movimiento</h2><form class="grid-form" action="/web/transactions" method="post">
+<label>Tipo<select name="transaction_type">{% for t in transaction_types %}<option value="{{ t.value }}">{{ t.value }}</option>{% endfor %}</select></label>
+<label>Categoría<select name="category">{% for c in categories %}<option value="{{ c.value }}">{{ c.value }}</option>{% endfor %}</select></label>
+<label>Monto<input name="amount" type="number" min=".01" step=".01" required></label>
+<label>Método<select name="payment_method">{% for p in payment_methods %}<option value="{{ p.value }}">{{ p.value }}</option>{% endfor %}</select></label>
+<label>Fecha<input name="transaction_date" type="date" value="{{ today }}" required></label>
+<label>Descripción<input name="description" required></label><button>Guardar movimiento</button></form></section>
+
+<section class="cards-grid"><article class="panel"><h2>Presupuestos</h2><p class="muted">Define cuánto planeas gastar por categoría y período. Crear un presupuesto no descuenta dinero.</p>
+<form class="compact-form" action="/web/budgets" method="post">
+<label>Categoría<select name="category">{% for c in expense_categories %}<option value="{{ c.value }}">{{ c.value }}</option>{% endfor %}</select></label>
+<label>Límite mensual<input name="monthly_limit" type="number" min=".01" step=".01" placeholder="Ej. 700" required></label>
+<label>Mes<select name="month">{% for number,name in months %}<option value="{{ number }}" {{ "selected" if number==current_month else "" }}>{{ name }}</option>{% endfor %}</select></label>
+<label>Año<input name="year" type="number" value="{{ current_year }}" min="2020" max="2100"></label><button>Guardar presupuesto</button></form>
+{% for r in budgets %}<div class="progress-card"><div class="progress-header"><strong>{{ r.budget.category.value }}</strong><span>S/ {{ "%.2f"|format(r.spent) }} / S/ {{ "%.2f"|format(r.budget.monthly_limit) }}</span></div>
+<div class="progress"><span style="width:{{ [r.percent,100]|min }}%"></span></div><small>{{ r.percent }}% utilizado</small></div>
+{% else %}<p class="muted">Aún no tienes presupuestos para este mes.</p>{% endfor %}</article>
+
+<article class="panel"><h2>Metas de ahorro</h2><form class="compact-form" action="/web/goals" method="post">
+<label>Meta<input name="name" placeholder="Ej. Laptop" required></label><label>Monto objetivo<input name="target_amount" type="number" min=".01" step=".01" required></label>
+<label>Monto inicial<input name="current_amount" type="number" min="0" step=".01" value="0"></label><label>Fecha objetivo<input name="target_date" type="date"></label><button>Crear meta</button></form>
+{% for g in goals %}{% set p=(g.current_amount/g.target_amount*100) if g.target_amount else 0 %}{% set complete=g.current_amount>=g.target_amount %}
+<div class="progress-card {{ 'goal-complete-card' if complete else '' }}"><div class="progress-header"><strong>{{ g.name }}</strong><span>S/ {{ "%.2f"|format(g.current_amount) }} / S/ {{ "%.2f"|format(g.target_amount) }}</span></div>
+<div class="progress goal"><span style="width:{{ [p,100]|min }}%"></span></div>
+{% if complete %}<div class="goal-complete-badge">✓ Meta completada</div>
+{% else %}<form class="contribute-form" action="/web/goals/{{ g.id }}/contribute" method="post">
+<input name="amount" type="number" min=".01" max="{{ "%.2f"|format(g.target_amount-g.current_amount) }}" step=".01" placeholder="Monto a aportar" required>
+<select name="payment_method">{% for pm in payment_methods %}<option value="{{ pm.value }}">{{ pm.value }}</option>{% endfor %}</select><button>Aportar desde saldo</button></form>
+<small class="muted">Faltan S/ {{ "%.2f"|format(g.target_amount-g.current_amount) }}.</small>{% endif %}</div>
+{% else %}<p class="muted">Aún no tienes metas.</p>{% endfor %}</article></section>
+
+<section class="cards-grid"><article class="panel"><h2>Próximos pagos</h2><p class="muted">Cada recurrente solo puede registrarse una vez por mes.</p>
+<form class="compact-form" action="/web/recurring" method="post"><label>Nombre<input name="name" placeholder="Ej. Internet" required></label>
+<label>Categoría<select name="category">{% for c in expense_categories %}<option value="{{ c.value }}">{{ c.value }}</option>{% endfor %}</select></label>
+<label>Monto<input name="amount" type="number" min=".01" step=".01" required></label><label>Día de pago<input name="due_day" type="number" min="1" max="31" required></label><button>Agregar recurrente</button></form>
+{% for r in recurring %}<div class="recurring-row {{ 'paid-row' if r.paid else 'overdue-row' if r.days<0 else '' }}">
+<div><strong>{{ r.item.name }}</strong><span>Día {{ r.item.due_day }} · S/ {{ "%.2f"|format(r.item.amount) }}</span><span class="status {{ 'status-paid' if r.paid else 'status-alert' if r.days<=3 else '' }}">{{ r.status }}</span></div>
+{% if r.paid %}<button disabled class="paid-button">Pagado este mes</button>
+{% else %}<form class="pay-form" action="/web/recurring/{{ r.item.id }}/pay" method="post" onsubmit="return confirm('¿Registrar este pago?')">
+<select name="payment_method">{% for pm in payment_methods %}<option value="{{ pm.value }}">{{ pm.value }}</option>{% endfor %}</select><button>Registrar pago</button></form>{% endif %}</div>
+{% else %}<p class="muted">Sin gastos recurrentes.</p>{% endfor %}</article>
+
+<article class="panel"><h2>Configuración financiera</h2><p class="muted">Estas preferencias personalizan el panel; no agregan ni descuentan dinero.</p>
+<form class="compact-form" action="/web/profile" method="post"><label>Moneda principal<input name="currency" value="{{ user.currency }}"></label>
+<label>Ingreso mensual esperado<input name="monthly_income_target" type="number" min="0" step=".01" value="{{ user.monthly_income_target }}"></label>
+<label class="wide-field">Objetivo financiero principal<input name="financial_goal" value="{{ user.financial_goal or '' }}" placeholder="Ej. Crear un fondo de emergencia"></label><button>Guardar configuración</button></form>
+<div class="profile-explanation"><strong>Ingreso real vs. esperado</strong><p>El ingreso esperado es una referencia para tus recomendaciones. Para aumentar el balance, registra un movimiento de tipo Ingreso.</p></div></article></section>
+
+<section class="panel">
+<div class="panel-title">
+<div><h2>Historial de pagos recurrentes</h2><p class="muted">Consulta los pagos confirmados en meses anteriores.</p></div>
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Servicio</th><th>Período</th><th>Fecha registrada</th><th>Monto</th></tr></thead>
+<tbody>
+{% for payment in payment_history %}
+<tr>
+<td>{{ payment.name }}</td>
+<td>{{ payment.month_name }} {{ payment.year }}</td>
+<td>{{ payment.paid_at.strftime("%d/%m/%Y %H:%M") }}</td>
+<td class="negative">S/ {{ "%.2f"|format(payment.amount) }}</td>
+</tr>
+{% else %}
+<tr><td colspan="4" class="empty">Todavía no hay pagos recurrentes registrados.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="panel" id="insight-history"><div class="panel-title"><div><h2>Historial de Insights</h2><p class="muted">Registro cronológico de alertas, tendencias, metas y recomendaciones.</p></div>
+<div class="history-filters"><select id="insightTypeFilter"><option value="Todos">Todos</option>{% for t in insight_types %}<option value="{{ t.value }}">{{ t.value }}</option>{% endfor %}</select>
+<select id="insightStatusFilter"><option value="Todos">Todos</option><option value="Nuevo">Nuevos</option><option value="Revisado">Revisados</option></select></div></div>
+<div id="insightList">{% for i in insight_history %}<article class="history-item" data-type="{{ i.insight_type.value }}" data-status="{{ 'Revisado' if i.is_reviewed else 'Nuevo' }}">
+<div><span class="insight-type">{{ i.insight_type.value }}</span><strong>{{ i.title }}</strong><p>{{ i.message }}</p><small>{{ i.created_at.strftime("%d/%m/%Y %H:%M") }} · {{ "Revisado" if i.is_reviewed else "Nuevo" }}</small></div>
+{% if not i.is_reviewed %}<form action="/web/insights/{{ i.id }}/review" method="post"><button class="secondary small">Marcar revisado</button></form>{% endif %}</article>
+{% else %}<p class="muted">Todavía no hay historial.</p>{% endfor %}</div></section>
+
+<section class="panel"><div class="panel-title"><h2>Movimientos recientes</h2><input id="search" placeholder="Buscar movimiento..."></div><div class="table-wrap"><table id="transactions-table">
+<thead><tr>
+<th><button type="button" class="sort-button" data-column="0">Fecha ↕</button></th>
+<th><button type="button" class="sort-button" data-column="1">Tipo ↕</button></th>
+<th><button type="button" class="sort-button" data-column="2">Categoría ↕</button></th>
+<th>Descripción</th><th>Método</th>
+<th><button type="button" class="sort-button" data-column="5" data-number="true">Monto ↕</button></th>
+<th></th></tr></thead><tbody>
+{% for t in transactions %}<tr><td>{{ t.transaction_date }}</td><td><span class="badge {{ t.transaction_type.name|lower }}">{{ t.transaction_type.value }}</span></td>
+<td>{{ t.category.value }}</td><td>{{ t.description }}</td><td>{{ t.payment_method.value }}</td><td class="{{ 'positive' if t.transaction_type.value=='Ingreso' else 'negative' }}">{{ '+' if t.transaction_type.value=='Ingreso' else '-' }} S/ {{ "%.2f"|format(t.amount) }}</td>
+<td><form action="/web/transactions/{{ t.id }}/delete" method="post" onsubmit="return confirm('¿Eliminar este movimiento?')"><button class="danger small">Eliminar</button></form></td></tr>
+{% else %}<tr><td colspan="7" class="empty">No hay movimientos.</td></tr>{% endfor %}</tbody></table></div></section>
+</main>
+<script>window.expenseRows={{ chart_rows|tojson }};window.currentMonth={{ current_month }};window.currentYear={{ current_year }};</script>
+<script src="{{ url_for('static', path='/app.js') }}"></script></body></html>
