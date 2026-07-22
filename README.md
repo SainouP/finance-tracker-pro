@@ -5,7 +5,19 @@ Finance Tracker Pro es una aplicación web de finanzas personales desarrollada p
 El proyecto fue desarrollado con el objetivo de aplicar buenas prácticas de desarrollo backend utilizando FastAPI, implementando autenticación con JWT, persistencia de datos, visualización de información mediante gráficos y una interfaz web sencilla e intuitiva.
 
 ---
+## 🌐 Demo en línea
 
+Puedes probar la aplicación aquí:
+
+🔗 [Abrir Finance Tracker Pro](https://finance-tracker-pro-q5z9.onrender.com)
+
+### Usuario de demostración
+
+```text
+Correo: demo@finance.com
+Contraseña: Demo123
+
+---
 ## 🚀 Características
 
 - Registro e inicio de sesión con autenticación JWT.
