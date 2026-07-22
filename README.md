@@ -45,14 +45,23 @@ El proyecto fue desarrollado con el objetivo de aplicar buenas prácticas de des
 
 ## 📷 Capturas
 
-> Aquí puedes agregar imágenes del proyecto.
+### Dashboard principal
+![Dashboard](screenshots/01_dashboard_principal.png)
 
-- Dashboard principal
-- Registro de movimientos
-- Metas de ahorro
-- Gastos recurrentes
-- Financial Insights
-- Documentación Swagger
+### Análisis de gastos e Insights
+![Análisis](screenshots/02_analisis_gastos.png)
+
+### Presupuestos y metas de ahorro
+![Presupuestos](screenshots/03_presupuestos_metas.png)
+
+### Pagos recurrentes
+![Pagos](screenshots/04_pagos_recurrentes.png)
+
+### Historial de Insights
+![Insights](screenshots/05_historial_insights.png)
+
+### Movimientos recientes
+![Movimientos](screenshots/06_movimientos_recientes.png)
 
 ---
 
