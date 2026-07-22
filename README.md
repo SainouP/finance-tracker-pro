@@ -1,103 +1,168 @@
-# Finance Tracker Pro V5
+# 💰 Finance Tracker Pro
 
-Aplicación web de finanzas personales desarrollada con FastAPI, SQLModel,
-Chart.js, JWT y una interfaz responsive.
+Finance Tracker Pro es una aplicación web de finanzas personales desarrollada para ayudar a los usuarios a administrar sus ingresos, gastos y objetivos de ahorro desde un solo lugar.
 
-## Funcionalidades
+El proyecto fue desarrollado con el objetivo de aplicar buenas prácticas de desarrollo backend utilizando FastAPI, implementando autenticación con JWT, persistencia de datos, visualización de información mediante gráficos y una interfaz web sencilla e intuitiva.
 
-- Registro e inicio de sesión.
-- Información financiera privada por usuario.
-- Ingresos, gastos, categorías y métodos de pago.
-- Balance general y resumen mensual.
-- Comparación de ingresos, gastos y ahorro contra el mes anterior.
-- Puntaje de salud financiera de 0 a 100.
-- Presupuestos mensuales con progreso.
-- Metas de ahorro descontadas del saldo.
-- Bloqueo visual de metas completadas.
-- Gastos recurrentes pagables una sola vez por mes.
-- Estado de pagos: pendiente, próximo, vencido o pagado.
+---
+
+## 🚀 Características
+
+- Registro e inicio de sesión con autenticación JWT.
+- Gestión de ingresos y gastos.
+- Balance financiero actualizado automáticamente.
+- Presupuestos mensuales por categoría.
+- Metas de ahorro con seguimiento del progreso.
+- Gastos recurrentes con control de pagos mensuales.
 - Historial de pagos recurrentes.
-- Financial Insights persistentes.
-- Historial de insights con filtros y estado revisado.
-- Gráficos por categoría, día, mes y año.
-- Búsqueda y ordenamiento de movimientos.
-- Exportación CSV.
+- Financial Insights generados automáticamente.
+- Gráficos interactivos por categoría, día, mes y año.
+- Comparación de ingresos, gastos y ahorro con el mes anterior.
+- Indicador de salud financiera.
+- Exportación de movimientos en formato CSV.
 - Tema claro y oscuro.
-- API REST con Swagger.
-- Docker, pruebas y GitHub Actions.
-- SQLite local y PostgreSQL mediante `DATABASE_URL`.
+- API documentada con Swagger.
 
-## Instalación local
+---
 
-```powershell
+## 🛠 Tecnologías utilizadas
+
+- Python
+- FastAPI
+- SQLModel
+- SQLite
+- PostgreSQL
+- JWT
+- Jinja2
+- HTML
+- CSS
+- JavaScript
+- Chart.js
+- Docker
+- Pytest
+
+---
+
+## 📷 Capturas
+
+> Aquí puedes agregar imágenes del proyecto.
+
+- Dashboard principal
+- Registro de movimientos
+- Metas de ahorro
+- Gastos recurrentes
+- Financial Insights
+- Documentación Swagger
+
+---
+
+## ▶️ Instalación
+
+Clonar el repositorio
+
+```bash
+git clone https://github.com/SainouP/finance-tracker-pro.git
+cd finance-tracker-pro
+```
+
+Crear el entorno virtual
+
+```bash
 python -m venv .venv
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\.venv\Scripts\Activate
+```
+
+Activarlo
+
+### Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+### Linux / macOS
+
+```bash
+source .venv/bin/activate
+```
+
+Instalar dependencias
+
+```bash
 pip install -r requirements.txt
+```
+
+Ejecutar la aplicación
+
+```bash
 python -m uvicorn app.main:app --reload
 ```
 
-Aplicación:
+La aplicación estará disponible en:
 
-```text
+```
 http://127.0.0.1:8000
 ```
 
-Swagger:
+Documentación de la API:
 
-```text
+```
 http://127.0.0.1:8000/docs
 ```
 
-Usuario demo:
+---
 
-```text
-demo@finance.com
-Demo123
-```
+## 🧪 Pruebas
 
-## Pruebas
+Para ejecutar las pruebas automatizadas:
 
-```powershell
+```bash
 python -m pytest -q
 ```
 
-## Publicar en GitHub
+---
 
-```powershell
-git init
-git add .
-git commit -m "feat: release Finance Tracker Pro V5"
-git branch -M main
-git remote add origin URL_DE_TU_REPOSITORIO
-git push -u origin main
+## 🗄 Base de datos
+
+Durante el desarrollo se utilizó **SQLite**, ya que facilita la configuración y las pruebas locales.
+
+La aplicación también es compatible con **PostgreSQL** mediante la variable de entorno `DATABASE_URL`, permitiendo su despliegue en servicios como Render.
+
+---
+
+## 📂 Estructura del proyecto
+
+```
+app/
+├── routers
+├── templates
+├── static
+├── models
+├── database
+└── main.py
+
+tests/
+README.md
+Dockerfile
+docker-compose.yml
 ```
 
-## Despliegue en Render
+---
 
-### Build command
+## 📌 Objetivo del proyecto
 
-```text
-pip install -r requirements.txt
-```
+Este proyecto forma parte de mi portafolio personal y fue desarrollado para fortalecer mis conocimientos en desarrollo backend con Python, diseño de APIs REST y manejo de bases de datos, implementando una aplicación con funcionalidades cercanas a un escenario real.
 
-### Start command
+---
 
-```text
-uvicorn app.main:app --host 0.0.0.0 --port $PORT
-```
+## 👨‍💻 Autor
 
-### Variables de entorno
+**Rodrigo Ramiro Jara Perez**
 
-```text
-SECRET_KEY=<cadena larga y segura>
-DATABASE_URL=<URL de PostgreSQL>
-PYTHON_VERSION=3.12.8
-```
+- GitHub: https://github.com/SainouP
+- LinkedIn: https://www.linkedin.com/in/rodrigo-ramiro-jara-perez-056602358/
 
-No uses SQLite para producción si necesitas conservar los datos después de cada
-nuevo despliegue. Utiliza una base PostgreSQL persistente.
+---
 
-## Licencia
+## 📄 Licencia
 
-MIT.
+Este proyecto está disponible bajo la licencia MIT.
