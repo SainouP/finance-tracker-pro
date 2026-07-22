@@ -46,22 +46,22 @@ El proyecto fue desarrollado con el objetivo de aplicar buenas prácticas de des
 ## 📷 Capturas
 
 ### Dashboard principal
-![Dashboard](screenshots/01_dashboard_principal.png)
+![Dashboard](screenshots/dashboard_principal.png)
 
 ### Análisis de gastos e Insights
-![Análisis](screenshots/02_analisis_gastos.png)
+![Análisis](screenshots/analisis_gastos.png)
 
 ### Presupuestos y metas de ahorro
-![Presupuestos](screenshots/03_presupuestos_metas.png)
+![Presupuestos](screenshots/presupuestos_metas.png)
 
 ### Pagos recurrentes
-![Pagos](screenshots/04_pagos_recurrentes.png)
+![Pagos](screenshots/pagos_recurrentes.png)
 
 ### Historial de Insights
-![Insights](screenshots/05_historial_insights.png)
+![Insights](screenshots/historial_insights.png)
 
 ### Movimientos recientes
-![Movimientos](screenshots/06_movimientos_recientes.png)
+![Movimientos](screenshots/movimientos_recientes.png)
 
 ---
 
