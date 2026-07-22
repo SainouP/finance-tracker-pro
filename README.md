@@ -52,7 +52,7 @@ El proyecto fue desarrollado con el objetivo de aplicar buenas prácticas de des
 ![Análisis](screenshots/analisis_gastos.png)
 
 ### Presupuestos y metas de ahorro
-![Presupuestos](screenshots/presupuestos_metas.png)
+![Presupuestos](screenshots/gestion_presupuestos_metas.png)
 
 ### Pagos recurrentes
 ![Pagos](screenshots/pagos_recurrentes.png)
